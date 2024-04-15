@@ -67,7 +67,8 @@ filegroup(
         ],
         exclude = [
             "lib/libLLVM*.a",
-            "lib/libclang*.a",
+            # Note: This is excluded in main, I'm not sure why though.
+            # "lib/libclang*.a",
             "lib/liblld*.a",
         ],
     ),
