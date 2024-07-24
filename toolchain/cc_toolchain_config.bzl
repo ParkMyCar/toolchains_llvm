@@ -155,15 +155,12 @@ def cc_toolchain_config(
             "-fobjc-link-runtime",
         ])
 
-        # Use the bundled libtool (llvm-libtool-darwin).
-        use_libtool = True
-
         # Pre-installed libtool on macOS has -static as default, but llvm-libtool-darwin needs it
         # explicitly. cc_common.create_link_variables does not automatically add this either if
         # output_file arg to it is None.
-        archive_flags.extend([
-            "-static",
-        ])
+        # archive_flags.extend([
+        #     "-static",
+        # ])
     else:
         # Note that for xcompiling from darwin to linux, the native ld64 is
         # not an option because it is not a cross-linker, so lld is the
@@ -175,7 +172,6 @@ def cc_toolchain_config(
             "-Wl,--hash-style=gnu",
             "-Wl,-z,relro,-z,now",
         ])
-        use_libtool = False
 
     # Flags related to C++ standard.
     # The linker has no way of knowing if there are C++ objects; so we
@@ -277,7 +273,7 @@ def cc_toolchain_config(
     # https://cs.opensource.google/bazel/bazel/+/refs/tags/7.0.0:tools/cpp/unix_cc_toolchain_config.bzl;l=192,201;drc=044a14cca2747aeff258fc71eaeb153c08cb34d5
     # NOTE: Ensure these are listed in toolchain_tools in toolchain/internal/common.bzl.
     tool_paths = {
-        "ar": tools_path_prefix + ("llvm-ar" if not use_libtool else "libtool"),
+        "ar": tools_path_prefix + "llvm-ar",
         "cpp": tools_path_prefix + "clang-cpp",
         "dwp": tools_path_prefix + "llvm-dwp",
         "gcc": wrapper_bin_prefix + "cc_wrapper.sh",
