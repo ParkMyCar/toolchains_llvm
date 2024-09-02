@@ -147,9 +147,7 @@ def cc_toolchain_config(
 
     # Linker flags:
     if exec_os == "darwin" and not is_xcompile:
-        # lld is experimental for Mach-O, so we use the native ld64 linker.
-        # TODO: How do we cross-compile from Linux to Darwin?
-        use_lld = False
+        use_lld = True
         link_flags.extend([
             "-headerpad_max_install_names",
             "-fobjc-link-runtime",
@@ -199,20 +197,7 @@ def cc_toolchain_config(
             # https://github.com/llvm/llvm-project/commit/0556138624edf48621dd49a463dbe12e7101f17d
             cxx_flags.append("-Xclang")
             cxx_flags.append("-fno-cxx-modules")
-        if use_lld:
-            # For single-platform builds, we can statically link the bundled
-            # libraries.
-            link_flags.extend([
-                "-l:libc++.a",
-                "-l:libc++abi.a",
-                "-l:libunwind.a",
-                # Compiler runtime features.
-                "-rtlib=compiler-rt",
-                # To support libunwind.
-                "-lpthread",
-                "-ldl",
-            ])
-        else:
+        if exec_os == "darwin" and not is_xcompile:
             # Several system libraries on macOS dynamically link libc++ and
             # libc++abi, so static linking them becomes a problem. We need to
             # ensure that they are dynamic linked from the system sysroot and
@@ -227,6 +212,19 @@ def cc_toolchain_config(
                 "-lunwind",
                 "-Bdynamic",
                 "-L{}lib".format(toolchain_path_prefix),
+            ])
+        else:
+            # For single-platform builds, we can statically link the bundled
+            # libraries.
+            link_flags.extend([
+                "-l:libc++.a",
+                "-l:libc++abi.a",
+                "-l:libunwind.a",
+                # Compiler runtime features.
+                "-rtlib=compiler-rt",
+                # To support libunwind.
+                "-lpthread",
+                "-ldl",
             ])
 
     elif stdlib == "libc++":
